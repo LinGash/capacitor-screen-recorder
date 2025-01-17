@@ -181,7 +181,11 @@ public class ScreenRecorderPlugin extends Plugin implements HBRecorderListener {
     }
 
     private void checkAndGetAudioPermission(PluginCall call) {
+        Log.e("Custom-----", String.valueOf(getPermissionState("audio")));
         if (getPermissionState("audio") != PermissionState.GRANTED) {
+            if(getPermissionState("audio") == PermissionState.DENIED){
+                call.reject("Denied");
+            }
             requestPermissionForAlias("audio", call, "audioCallBack");
         } else {
             callRecordingAndGenerateResponse(call);
@@ -270,7 +274,9 @@ public class ScreenRecorderPlugin extends Plugin implements HBRecorderListener {
         result.put("status", true);
         result.put("message", "Recording Stopped");
         result.put("file_name", hbRecorder.getFileName());
+        Log.e("File Path-------", hbRecorder.getFilePath());
         result.put("file_path", hbRecorder.getFilePath());
+
         notifyListeners("onRecordingComplete", result);
         //Log.e("File Path",hbRecorder.getFileName());
     }
@@ -309,7 +315,7 @@ public class ScreenRecorderPlugin extends Plugin implements HBRecorderListener {
     //Get/Set the selected settings
     private void quickSettings() {
         hbRecorder.recordHDVideo(true);
-        hbRecorder.isAudioEnabled(false);
+        hbRecorder.isAudioEnabled(true);
         hbRecorder.setVideoEncoder("H264");
     }
 
@@ -317,7 +323,7 @@ public class ScreenRecorderPlugin extends Plugin implements HBRecorderListener {
     //Only call this on Android 9 and lower (getExternalStoragePublicDirectory is deprecated)
     //This can still be used on Android 10> but you will have to add android:requestLegacyExternalStorage="true" in your Manifest
     private void createFolder() {
-        File f1 = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES), "ScreenRecordings");
+        File f1 = new File(Environment.getExternalStorageDirectory(), "Movies/ScreenRecordings");
         if (!f1.exists()) {
             if (f1.mkdirs()) {
                 Log.i("Folder ", "created");
@@ -361,10 +367,10 @@ public class ScreenRecorderPlugin extends Plugin implements HBRecorderListener {
             //FILE NAME SHOULD BE THE SAME
             hbRecorder.setFileName(filename);
             hbRecorder.setOutputUri(mUri);
-            hbRecorder.setOutputPath(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES) + "/ScreenRecordings");
+            hbRecorder.setOutputPath(Environment.getExternalStorageDirectory() + "/Movies/ScreenRecordings");
         } else {
             createFolder();
-            hbRecorder.setOutputPath(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES) + "/ScreenRecordings");
+            hbRecorder.setOutputPath(Environment.getExternalStorageDirectory() + "/Movies/ScreenRecordings");
         }
     }
 
@@ -436,6 +442,14 @@ public class ScreenRecorderPlugin extends Plugin implements HBRecorderListener {
             setOutputPath();
             //Start screen recording
             hbRecorder.startScreenRecording(result.getData(), result.getResultCode());
+        }else {
+            // Handle when user cancels the permission request
+            Log.e("ScreenRecorder", "Screen recording permission denied or cancelled");
+            call.reject("User cancelled the screen recording permission request.");
+            JSObject obj = new JSObject();
+            obj.put("status", false);
+            obj.put("message", "User cancelled the screen recording permission request.");
+            notifyListeners("onRecordingError", obj);
         }
 
     }
