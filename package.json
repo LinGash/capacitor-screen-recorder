@@ -17,10 +17,10 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/srikant-kumar/capacitor-screen-recorder.git.git"
+    "url": "git+https://github.com/LinGash/capacitor-screen-recorder.git"
   },
   "bugs": {
-    "url": "https://github.com/srikant-kumar/capacitor-screen-recorder.git/issues"
+    "url": "git+https://github.com/LinGash/capacitor-screen-recorder.git/issues"
   },
   "keywords": [
     "capacitor",
