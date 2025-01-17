@@ -316,7 +316,8 @@ public class ScreenRecorderPlugin extends Plugin implements HBRecorderListener {
     private void quickSettings() {
         hbRecorder.recordHDVideo(true);
         hbRecorder.isAudioEnabled(true);
-        hbRecorder.setVideoEncoder("H264");
+        hbRecorder.setVideoBitrate(2500000); // Lower bitrate
+        hbRecorder.setVideoFrameRate(30); // Reduce frame rat
     }
 
     //Create Folder
