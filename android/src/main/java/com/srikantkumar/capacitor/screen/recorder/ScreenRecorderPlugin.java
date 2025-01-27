@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+// import javax.swing.text.View;
 
 import androidx.activity.result.ActivityResult;
 import androidx.core.app.ActivityCompat;
@@ -47,6 +48,11 @@ import com.hbisoft.hbrecorder.HBRecorderCodecInfo;
 import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
 import static com.hbisoft.hbrecorder.Constants.MAX_FILE_SIZE_REACHED_ERROR;
 import static com.hbisoft.hbrecorder.Constants.SETTINGS_ERROR;
+
+import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
+import android.app.Activity;
 
 
 @CapacitorPlugin(
@@ -84,7 +90,50 @@ public class ScreenRecorderPlugin extends Plugin implements HBRecorderListener {
     //Declare HBRecorder
     private HBRecorder hbRecorder;
 
+     @PluginMethod
+    public void enableFullScreen(PluginCall call) {
+        Activity activity = getActivity();
+        if (activity != null) {
+            activity.runOnUiThread(() -> {
+                activity.getWindow().setFlags(
+                    WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                    WindowManager.LayoutParams.FLAG_FULLSCREEN
+                );
 
+                activity.getWindow().getDecorView().setSystemUiVisibility(
+                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
+                    View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
+                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
+                    View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
+                    View.SYSTEM_UI_FLAG_FULLSCREEN |
+                    View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                );
+            });
+            call.resolve();
+        } else {
+            call.reject("Failed to get activity");
+        }
+    }
+
+    @PluginMethod
+    public void disableFullScreen(PluginCall call) {
+        Activity activity = getActivity();
+        if (activity != null) {
+            activity.runOnUiThread(() -> {
+                // Clear full-screen flag
+                activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
+                // Restore the default system UI
+                activity.getWindow().getDecorView().setSystemUiVisibility(
+                    View.SYSTEM_UI_FLAG_VISIBLE
+                );
+            });
+            call.resolve();
+        } else {
+            call.reject("Failed to get activity");
+        }
+    }
+    
     @Override
     public void load() {
         //Init HBRecorder
@@ -324,7 +373,7 @@ public class ScreenRecorderPlugin extends Plugin implements HBRecorderListener {
     //Only call this on Android 9 and lower (getExternalStoragePublicDirectory is deprecated)
     //This can still be used on Android 10> but you will have to add android:requestLegacyExternalStorage="true" in your Manifest
     private void createFolder() {
-        File f1 = new File(Environment.getExternalStorageDirectory(), "Movies/ScreenRecordings");
+        File f1 = new File(Environment.getExternalStorageDirectory(), "Movies/mmGuitar");
         if (!f1.exists()) {
             if (f1.mkdirs()) {
                 Log.i("Folder ", "created");
@@ -360,7 +409,7 @@ public class ScreenRecorderPlugin extends Plugin implements HBRecorderListener {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             resolver = getContext().getContentResolver();
             contentValues = new ContentValues();
-            contentValues.put(MediaStore.Video.Media.RELATIVE_PATH, "Movies/" + "ScreenRecordings");
+            contentValues.put(MediaStore.Video.Media.RELATIVE_PATH, "Movies/" + "mmGuitar");
             contentValues.put(MediaStore.Video.Media.TITLE, filename);
             contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, filename);
             contentValues.put(MediaStore.MediaColumns.MIME_TYPE, "video/mp4");
@@ -368,10 +417,10 @@ public class ScreenRecorderPlugin extends Plugin implements HBRecorderListener {
             //FILE NAME SHOULD BE THE SAME
             hbRecorder.setFileName(filename);
             hbRecorder.setOutputUri(mUri);
-            hbRecorder.setOutputPath(Environment.getExternalStorageDirectory() + "/Movies/ScreenRecordings");
+            hbRecorder.setOutputPath(Environment.getExternalStorageDirectory() + "/Movies/mmGuitar");
         } else {
             createFolder();
-            hbRecorder.setOutputPath(Environment.getExternalStorageDirectory() + "/Movies/ScreenRecordings");
+            hbRecorder.setOutputPath(Environment.getExternalStorageDirectory() + "/Movies/mmGuitar");
         }
     }
 
